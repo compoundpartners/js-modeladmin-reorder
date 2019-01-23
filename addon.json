@@ -1,0 +1,6 @@
+{
+    "package-name": "js-modeladmin-reorder",
+    "installed-apps": [
+        "admin_reorder"
+    ]
+}

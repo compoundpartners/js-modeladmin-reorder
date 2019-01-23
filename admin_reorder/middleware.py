@@ -55,6 +55,9 @@ class ModelAdminReorder(MiddlewareMixin):
                     app['app_label'], model['object_name'])
                 self.models_list.append(model)
 
+        self.staff_apps_exlude = getattr(settings, 'ADMIN_REORDER_STAFF_APPS_EXCLUDE', [])
+
+
     def get_app_list(self):
         ordered_app_list = []
         for app_config in self.config:
@@ -159,5 +162,11 @@ class ModelAdminReorder(MiddlewareMixin):
 
         self.init_config(request, app_list)
         ordered_app_list = self.get_app_list()
+        if not request.user.is_superuser:
+            app_list = []
+            for app in ordered_app_list:
+                if not app['app_label'] in self.staff_apps_exlude:
+                    app_list.append(app)
+            ordered_app_list = app_list
         response.context_data['app_list'] = ordered_app_list
         return response
