@@ -15,5 +15,5 @@ class Form(forms.BaseForm):
     def to_settings(self, data, settings):
         if data['enabled']:
             settings["INSTALLED_APPS"].append('admin_reorder')
-            settings["MIDDLEWARE_CLASSES"].append('admin_reorder.middleware.ModelAdminReorder')
+            settings["MIDDLEWARE"].append('admin_reorder.middleware.ModelAdminReorder')
         return settings
