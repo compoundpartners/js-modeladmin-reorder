@@ -29,7 +29,7 @@ class ModelAdminReorder(MiddlewareMixin):
         self.request = request
         self.app_list = app_list
 
-        self.config = getattr(settings, 'ADMIN_REORDER', None)
+        self.config = getattr(settings, 'ADMIN_REORDER', [])
         if not self.config:
             # ADMIN_REORDER settings is not defined.
             raise ImproperlyConfigured('ADMIN_REORDER config is not defined.')
@@ -160,8 +160,11 @@ class ModelAdminReorder(MiddlewareMixin):
             # there is no app_list! nothing to reorder
             return response
 
-        self.init_config(request, app_list)
-        ordered_app_list = self.get_app_list()
+        try:
+            self.init_config(request, app_list)
+            ordered_app_list = self.get_app_list()
+        except ImproperlyConfigured:
+            ordered_app_list = app_list
         if not request.user.is_superuser:
             app_list = []
             for app in ordered_app_list:
