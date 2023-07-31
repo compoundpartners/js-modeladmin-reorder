@@ -7,7 +7,6 @@ from copy import deepcopy
 from django.conf import settings
 from django.contrib import admin
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.six import string_types
 
 try:
     from django.urls import resolve, Resolver404
@@ -67,11 +66,11 @@ class ModelAdminReorder(MiddlewareMixin):
         return ordered_app_list
 
     def make_app(self, app_config):
-        if not isinstance(app_config, (dict, string_types)):
+        if not isinstance(app_config, (dict, str)):
             raise TypeError('ADMIN_REORDER list item must be '
                             'dict or string. Got %s' % repr(app_config))
 
-        if isinstance(app_config, string_types):
+        if isinstance(app_config, str):
             # Keep original label and models
             return self.find_app(app_config)
         else:
@@ -135,10 +134,14 @@ class ModelAdminReorder(MiddlewareMixin):
 
     def process_model(self, model_config):
         # Process model defined as { model: 'model', 'label': 'label' }
-        for key in ('model', 'label', ):
-            if key not in model_config:
-                return
-        model = self.find_model(model_config['model'])
+        if 'label' not in model_config:
+            return
+        if 'url' in model_config:
+            model = {'admin_url': model_config['url']}
+        elif 'model' in model_config:    
+            model = self.find_model(model_config['model'])
+        else:
+            return
         if model:
             model['name'] = model_config['label']
             return model
@@ -160,11 +163,8 @@ class ModelAdminReorder(MiddlewareMixin):
             # there is no app_list! nothing to reorder
             return response
 
-        try:
-            self.init_config(request, app_list)
-            ordered_app_list = self.get_app_list()
-        except ImproperlyConfigured:
-            ordered_app_list = app_list
+        self.init_config(request, app_list)
+        ordered_app_list = self.get_app_list()
         if not request.user.is_superuser:
             app_list = []
             for app in ordered_app_list:
