@@ -91,7 +91,10 @@ class ModelAdminReorder(MiddlewareMixin):
             raise NameError('ADMIN_REORDER list item must define '
                             'a "app" name. Got %s' % repr(app_config))
 
-        app = self.find_app(app_config['app'])
+        if app_config['app'] is None:
+            app = {'app_url': ''}
+        else:
+            app = self.find_app(app_config['app'])
         if app:
             app = deepcopy(app)
             # Rename app
